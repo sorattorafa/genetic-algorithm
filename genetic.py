@@ -39,32 +39,41 @@ def selection(population, f_acm, random_numbers):
 def cross(selected_parents, crossing_points):
     childs = []
     for idx, parents in enumerate(selected_parents):
+        parents = ('{:08b}'.format(parents[0]), '{:08b}'.format(parents[1]))
+
         if crossing_points[idx] is None:
-            childs.append([parents[0], parents[1]])
-
-            parent_1_bits = '{:08b}'.format(parents[0])
-            parent_2_bits = '{:08b}'.format(parents[1])
-
-            print('Parent {} A ({}): '.format(idx, parents[0]), parent_1_bits)
-            print('Parent {} B ({}): '.format(idx, parents[1]), parent_2_bits)
-            print('Child A: ', child_1)
-            print('Child B: ', child_2)
-            print('\n')
+            childs.extend(parents)
         else:
-            parent_1_bits = '{:08b}'.format(parents[0])
-            parent_2_bits = '{:08b}'.format(parents[1])
+            start = crossing_points[idx][0]
+            end = crossing_points[idx][1]
 
-            child_1 = parent_1_bits[0: crossing_points[idx][0]] + parent_2_bits[crossing_points[idx]
-                                                                                [0]: crossing_points[idx][1]+1]+parent_1_bits[crossing_points[idx][1]+1:]
+            child1 = parents[0][:start] + \
+                parents[1][start:end+1] + parents[0][end+1:]
 
-            child_2 = parent_2_bits[0: crossing_points[idx][0]] + parent_1_bits[crossing_points[idx]
-                                                                                [0]: crossing_points[idx][1]+1]+parent_2_bits[crossing_points[idx][1]+1:]
-            print('Parent {} A ({}): '.format(idx, parents[0]), parent_1_bits)
-            print('Parent {} B ({}): '.format(idx, parents[1]), parent_2_bits)
-            print('Crossing points: ', crossing_points[idx])
-            print('Child A ({}): '.format(int(child_1, 2)), child_1)
-            print('Child B ({}): '.format(int(child_2, 2)), child_2)
-            print('\n')
+            child2 = parents[1][:start] + \
+                parents[0][start:end+1] + parents[1][end+1:]
+
+            childs.extend([child1, child2])
+
+    return childs
+
+
+def mutate(individuals, idx):
+
+    def swap_bit(str, pos):
+        new_bit = '0' if str[pos] == '1' else '0'
+        return str[:pos] + new_bit + str[pos+1:]
+
+    idx -= 1
+
+    individual_idx = int(idx / 8)
+    individual_offset = idx % 8
+
+    individuals[individual_idx] = swap_bit(
+        individuals[individual_idx], individual_offset)
+
+    print('individual_idx', individual_idx)
+    print('individual_offset', individual_offset)
 
 
 population = [189, 216, 99, 236, 174, 75, 35, 53]
@@ -83,4 +92,7 @@ crossing_points = [
 
 ]
 
-cross(selected_parents, crossing_points)
+childs = cross(selected_parents, crossing_points)
+print('childs', childs)
+mutate(childs, 17)
+print('mutated childs', childs)
